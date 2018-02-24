@@ -1,0 +1,14 @@
+[style]
+align_closing_bracket_with_visual_indent = true
+allow_split_before_dict_value = false
+based_on_style = pep8
+column_limit = 86
+coalesce_brackets = true
+dedent_closing_brackets = true
+each_dict_entry_on_separate_line = true
+indent_dictionary_value = false
+split_before_first_argument = true
+split_before_named_assigns = false
+space_between_ending_comma_and_closing_bracket = 0
+split_penalty_after_opening_bracket = 0
+split_penalty_after_unary_operator = 0

@@ -1,0 +1,51 @@
+version: '2.1'
+services:
+  postgres:
+    image: mdillon/postgis
+    container_name: postgres
+    environment:
+      POSTGRES_DB: ${RDS_DB_NAME}
+      POSTGRES_USER: ${RDS_USERNAME}
+      POSTGRES_PASSWORD: ${RDS_PASSWORD}
+    ports:
+      - 5432:5432
+    volumes:
+      - ./volumes/postgres/data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U ${RDS_USERNAME} -d ${RDS_DB_NAME}"
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+
+  django_server:
+    container_name: django_server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ./startup_scripts/django_server.sh
+    ports:
+      - 8000:8000
+      - 8001:8001
+    env_file:
+      - .env
+    volumes:
+      - ./:/hackathon
+      - ./volumes/django_server/logs:/hackathon/logs
+      - ./volumes/pip-cache:/tmp/pip-cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  nginx:
+    image: nginx:1.13.9-alpine
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./volumes/nginx:/var/log/nginx
+    ports:
+      - 8080:8080
+      - 80:80
+    links:
+      - django_server:django_server
+    restart: always
