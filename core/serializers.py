@@ -53,18 +53,16 @@ class QuizItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = (
-            'id',
-            'question',
-            'answer',
-            'options',
-            'hint',
-            'trivia',
-            'image_url',
-            'is_answered',
-            'user_answer',
-            'user_answer_correct',
-        )
+        fields = ('id',
+                  'question',
+                  'answer',
+                  'options',
+                  'hint',
+                  'trivia',
+                  'image_url',
+                  'is_answered',
+                  'user_answer',
+                  'user_answer_correct', )
 
 
 class QuizSerializer(DynamicFieldsModelSerializer):
@@ -74,8 +72,7 @@ class QuizSerializer(DynamicFieldsModelSerializer):
     museum_name = serializers.SlugRelatedField(
         source='museum',
         slug_field='name',
-        read_only=True,
-    )
+        read_only=True, )
 
     def get_points(self, instance):
         request = self.context.get('request')
@@ -83,8 +80,7 @@ class QuizSerializer(DynamicFieldsModelSerializer):
             qs = UserAnswer.objects.filter(
                 user=request.user,
                 question__quiz=instance,
-                correct=True,
-            ).aggregate(Sum('question__points'))
+                correct=True, ).aggregate(Sum('question__points'))
             return qs['question__points__sum'] or 0
 
     def get_questions(self, instance):
@@ -93,8 +89,7 @@ class QuizSerializer(DynamicFieldsModelSerializer):
         if request and request.user.is_authenticated:
             answers = UserAnswer.objects.filter(
                 user=request.user,
-                question__quiz=instance
-            ).values('answer', 'correct', 'question_id')
+                question__quiz=instance).values('answer', 'correct', 'question_id')
             answers = {a['question_id']: a for a in answers}
         else:
             answers = {}
@@ -103,8 +98,7 @@ class QuizSerializer(DynamicFieldsModelSerializer):
         serialized = QuizItemSerializer(
             instance=queryset.distinct('pk'),
             many=True,
-            context=context,
-        )
+            context=context, )
         return serialized.data
 
     class Meta:
@@ -134,14 +128,11 @@ class MuseumSerializer(gis_serializers.GeoModelSerializer):
     quizzes = QuizSerializer(
         many=True,
         read_only=True,
-        fields=(
-            'id',
-            'name',
-            'museum_name',
-            'category',
-        ),
-        source='quiz_set',
-    )
+        fields=('id',
+                'name',
+                'museum_name',
+                'category', ),
+        source='quiz_set', )
 
     def get_distance(self, obj):
         params = self.context.get('request').query_params
@@ -169,8 +160,9 @@ class MuseumSerializer(gis_serializers.GeoModelSerializer):
         serializer = UpcomingEventSerializer(
             instance=upcoming_events,
             many=True,
-            context={'request': self.context.get('request')},
-        )
+            context={
+                'request': self.context.get('request')
+            }, )
         return serializer.data
 
     def to_representation(self, obj):
@@ -181,21 +173,20 @@ class MuseumSerializer(gis_serializers.GeoModelSerializer):
 
     class Meta:
         model = Museum
-        fields = (
-            'id',
-            'address',
-            'city',
-            'coordinates',
-            'country',
-            'description',
-            'distance',
-            'thumbnail',
-            'images',
-            'name',
-            'upcoming_events',
-            'quizzes',
-            'rating',
-        )
+        fields = ('id',
+                  'address',
+                  'city',
+                  'coordinates',
+                  'country',
+                  'description',
+                  'distance',
+                  'thumbnail',
+                  'images',
+                  'name',
+                  'upcoming_events',
+                  'quizzes',
+                  'rating', )
+        order_by = (('-distance', ))
 
 
 class UserAnswerSerializer(serializers.ModelSerializer):
@@ -211,8 +202,7 @@ class UserAnswerSerializer(serializers.ModelSerializer):
         instance, _ = self.Meta.model.objects.update_or_create(
             question=question,
             user=user,
-            defaults=validated_data,
-        )
+            defaults=validated_data, )
         return instance
 
     def update(self, instance, validated_data):
@@ -221,5 +211,5 @@ class UserAnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAnswer
         fields = ('question', 'answer', 'correct', 'user')
-        read_only_fields = ('correct',)
+        read_only_fields = ('correct', )
         validators = []
