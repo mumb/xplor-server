@@ -38,6 +38,13 @@ class QuestionInlineAdmin(admin.StackedInline):
 
 
 class QuizAdmin(admin.ModelAdmin):
+    def number_of_questions(self, obj):
+        if obj:
+            return obj.question_set.count()
+
+    list_display = ('name', 'category', 'museum', 'number_of_questions')
+    list_filter = ('category', 'museum')
+    readonly_fields = ('number_of_questions',)
     inlines = [QuestionInlineAdmin]
 
 
