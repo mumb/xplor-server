@@ -11,7 +11,7 @@
 
 * See comment in `Makefile` to persist data.
 
-* Container is hot reloaded in case of and any change in code
+* Container is hot reloaded in case of any change in code
 
 
 * For MacOs, install docker engine from their site and rest of command is same.

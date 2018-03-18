@@ -6,20 +6,16 @@ from django.db.models import Sum, F
 from django.shortcuts import render, redirect
 from django.views.decorators.cache import cache_page
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import (
-    response,
-    decorators,
-    viewsets,
-    exceptions,
-    permissions,
-    reverse,
-)
+from rest_framework import (response,
+                            decorators,
+                            viewsets,
+                            exceptions,
+                            permissions,
+                            reverse, )
 from .models import Museum, Quiz, UserAnswer
-from .serializers import (
-    QuizSerializer,
-    MuseumSerializer,
-    UserAnswerSerializer,
-)
+from .serializers import (QuizSerializer,
+                          MuseumSerializer,
+                          UserAnswerSerializer, )
 
 
 class QuizAPI(viewsets.ModelViewSet):
@@ -29,19 +25,15 @@ class QuizAPI(viewsets.ModelViewSet):
     @transaction.atomic
     @decorators.detail_route(
         methods=['post'],
-        permission_classes=(permissions.IsAuthenticated,),
-    )
+        permission_classes=(permissions.IsAuthenticated, ), )
     def submit(self, request, pk):
         serialized = UserAnswerSerializer(
             data=request.data.get('answers', []),
             context=self.get_serializer_context(),
-            many=True,
-        )
+            many=True, )
         serialized.is_valid(raise_exception=True)
         serialized.save()
-        return redirect(
-            reverse.reverse_lazy("core:quiz-detail", kwargs={'pk': int(pk)})
-        )
+        return redirect(reverse.reverse_lazy("core:quiz-detail", kwargs={'pk': int(pk)}))
 
     def update(self, request, *args, **kwargs):
         raise NotImplementedError()
@@ -65,7 +57,7 @@ class MuseumAPI(viewsets.ModelViewSet):
         lat, lng = params.get('lat'), params.get('lng')
         queryset = self.queryset
         if lat and lng:
-            radius = params.get('radius', 5000)  # default radius to 5km
+            radius = params.get('radius', 10000)  # default radius to 5km
             pnt = GEOSGeometry('POINT({} {})'.format(lng, lat), srid=4326)
             queryset = self.queryset.filter(coordinates__distance_lte=(pnt, radius))
         return queryset
@@ -80,8 +72,7 @@ def get_ranked():
         points=Sum('question__points'),
         first_name=F('user__first_name'),
         last_name=F('user__last_name'),
-        username=F('user__username'),
-    ).order_by('-points')
+        username=F('user__username'), ).order_by('-points')
 
 
 def get_user_profiles(user_ids):
@@ -107,16 +98,14 @@ def leaderboard(request):
 
     resp = [{
         "image_url": get_facebook_profile_image_url(profiles.get(r['user_id'])),
-        "name": (
-            ' '.join([r['first_name'], r['last_name']]).strip() or r['username']
-        ),
+        "name": (' '.join([r['first_name'], r['last_name']]).strip() or r['username']),
         "points": r['points'],
     } for r in ranked]
     return response.Response(resp)
 
 
 @decorators.api_view(http_method_names=['get'])
-@decorators.permission_classes((permissions.IsAuthenticated,))
+@decorators.permission_classes((permissions.IsAuthenticated, ))
 def profile(request):
     social_profile = request.user.socialaccount_set.first()
     if not social_profile:
