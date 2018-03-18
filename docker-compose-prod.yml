@@ -33,6 +33,7 @@ services:
       - ./:/hackathon
       - ./volumes/django_server/logs:/hackathon/logs
       - ./volumes/pip-cache:/tmp/pip-cache
+      - ./static:/hackathon/staticfiles
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,9 +44,13 @@ services:
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./volumes/nginx:/var/log/nginx
+      - ./static:/static
+      - ./mediafiles:/media
     ports:
       - 8080:8080
       - 80:80
+    depends_on:
+      - django_server
     links:
       - django_server:django_server
     restart: always
