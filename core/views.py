@@ -17,6 +17,7 @@ from .models import Museum, Quiz, UserAnswer
 from .serializers import (QuizSerializer,
                           MuseumSerializer,
                           UserAnswerSerializer, )
+from .renders import CustomJsonRenderer
 
 
 class QuizAPI(viewsets.ModelViewSet):
@@ -46,7 +47,7 @@ class QuizAPI(viewsets.ModelViewSet):
 class MuseumAPI(viewsets.ModelViewSet):
     serializer_class = MuseumSerializer
     queryset = Museum.objects
-    ordering_fields = ('distance')
+    renderer_classes = (CustomJsonRenderer, )
 
     def update(self, request, *args, **kwargs):
         raise exceptions.PermissionDenied()
@@ -62,7 +63,7 @@ class MuseumAPI(viewsets.ModelViewSet):
             radius = params.get('radius', 10000)  # default radius to 5km
             pnt = GEOSGeometry('POINT({} {})'.format(lng, lat), srid=4326)
             queryset = self.queryset.filter(coordinates__distance_lte=(pnt, radius)).annotate(
-                distance=Distance('coordinates', pnt) * 100)
+                distance=Distance('coordinates', pnt) / 1000).order_by('distance')
         return queryset
 
 
