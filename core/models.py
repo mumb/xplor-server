@@ -75,10 +75,6 @@ class Question(BaseModel):
     )
     points = models.PositiveSmallIntegerField(default=50)
 
-    @property
-    def is_answered(self):
-        return getattr(self, 'user_answer_correct', None) is not None
-
     def clean(self):
         if self.answer not in self.options:
             raise ValidationError({'answer': _("Must be one of the options!")})

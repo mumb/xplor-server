@@ -28,8 +28,9 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
 
 class QuizItemSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
-    user_answer = serializers.ReadOnlyField()
-    user_answer_correct = serializers.ReadOnlyField()
+    user_answer = serializers.SerializerMethodField()
+    user_answer_correct = serializers.SerializerMethodField()
+    is_answered = serializers.SerializerMethodField()
 
     def get_image_url(self, instance):
         request = self.context.get('request')
@@ -37,19 +38,32 @@ class QuizItemSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(instance.image.url)
         return instance.image.url
 
+    def get_user_answer_correct(self, instance):
+        answers = self.context.get('answers', {})
+        if answers.get(instance.pk):
+            return answers[instance.pk].get('correct') is True
+
+    def get_user_answer(self, instance):
+        answers = self.context.get('answers', {})
+        if answers.get(instance.pk):
+            return answers[instance.pk].get('answer')
+
+    def get_is_answered(self, instance):
+        return self.get_user_answer(instance) is not None
+
     class Meta:
         model = Question
         fields = (
             'id',
             'question',
+            'answer',
             'options',
             'hint',
             'trivia',
-            'answer',
-            'user_answer_correct',
-            'is_answered',
             'image_url',
+            'is_answered',
             'user_answer',
+            'user_answer_correct',
         )
 
 
@@ -77,24 +91,19 @@ class QuizSerializer(DynamicFieldsModelSerializer):
         request = self.context.get('request')
         queryset = instance.question_set.all()
         if request and request.user.is_authenticated:
-            queryset = queryset.annotate(
-                user_answer_correct=Case(
-                    When(
-                        condition=Q(useranswer__user_id=request.user.pk),
-                        then=F('useranswer__correct'),
-                    ),
-                ), user_answer=Case(
-                    When(
-                        condition=Q(useranswer__user_id=request.user.pk),
-                        then=F('useranswer__answer'),
-                    ),
-                )
-            )
+            answers = UserAnswer.objects.filter(
+                user=request.user,
+                question__quiz=instance
+            ).values('answer', 'correct', 'question_id')
+            answers = {a['question_id']: a for a in answers}
+        else:
+            answers = {}
 
+        context = {'answers': answers, 'request': self.context.get('request')}
         serialized = QuizItemSerializer(
             instance=queryset.distinct('pk'),
             many=True,
-            context=self.context,
+            context=context,
         )
         return serialized.data
 
