@@ -121,7 +121,7 @@ class UpcomingEventSerializer(serializers.ModelSerializer):
 
 
 class MuseumSerializer(gis_serializers.GeoModelSerializer):
-    distance = serializers.SerializerMethodField()
+    # distance = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
     upcoming_events = serializers.SerializerMethodField()
@@ -186,7 +186,6 @@ class MuseumSerializer(gis_serializers.GeoModelSerializer):
                   'upcoming_events',
                   'quizzes',
                   'rating', )
-        order_by = (('-distance', ))
 
 
 class UserAnswerSerializer(serializers.ModelSerializer):

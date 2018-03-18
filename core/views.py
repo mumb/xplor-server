@@ -1,6 +1,7 @@
 from allauth.socialaccount.models import SocialAccount
 from allauth.socialaccount.providers.facebook.views import login_by_token
 from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.db.models.functions import Distance
 from django.db import transaction
 from django.db.models import Sum, F
 from django.shortcuts import render, redirect
@@ -45,6 +46,7 @@ class QuizAPI(viewsets.ModelViewSet):
 class MuseumAPI(viewsets.ModelViewSet):
     serializer_class = MuseumSerializer
     queryset = Museum.objects
+    ordering_fields = ('distance')
 
     def update(self, request, *args, **kwargs):
         raise exceptions.PermissionDenied()
@@ -59,7 +61,8 @@ class MuseumAPI(viewsets.ModelViewSet):
         if lat and lng:
             radius = params.get('radius', 10000)  # default radius to 5km
             pnt = GEOSGeometry('POINT({} {})'.format(lng, lat), srid=4326)
-            queryset = self.queryset.filter(coordinates__distance_lte=(pnt, radius))
+            queryset = self.queryset.filter(coordinates__distance_lte=(pnt, radius)).annotate(
+                distance=Distance('coordinates', pnt) * 100)
         return queryset
 
 
