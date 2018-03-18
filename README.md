@@ -1,8 +1,6 @@
 ## Installation
 * Clone the repo.
-
-## Installation
-### Docker based environment setup:
+### Docker based environment setup for ubuntu:
 * For ubuntu 16.04+, `make install-deps`
 * Copy `.env.sample` file to `.env` file and change values accordingly
 * Run `make up` to start the server
@@ -13,5 +11,5 @@
 
 * Container is hot reloaded in case of any change in code
 
-
-* For MacOs, install docker engine from their site and rest of command is same.
+### Docker based environment setup for Mac:
+* Install docker engine from docker official website and rest of command is same.
