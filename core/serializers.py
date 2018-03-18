@@ -134,13 +134,6 @@ class MuseumSerializer(gis_serializers.GeoModelSerializer):
                 'category', ),
         source='quiz_set', )
 
-    # def get_distance(self, obj):
-    #     params = self.context.get('request').query_params
-    #     lat, lng = params.get('lat'), params.get('lng')
-    #     if lat and lng:
-    #         query_point = GEOSGeometry('POINT({} {})'.format(lng, lat), srid=4326)
-    #         return obj.coordinates.distance(query_point) * 100
-
     def get_images(self, instance):
         images = instance.images.all()
         request = self.context.get('request')
