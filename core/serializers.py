@@ -92,7 +92,7 @@ class QuizSerializer(DynamicFieldsModelSerializer):
             )
 
         serialized = QuizItemSerializer(
-            instance=queryset.distinct(),
+            instance=queryset.distinct('pk'),
             many=True,
             context=self.context,
         )
